@@ -1,0 +1,88 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrapAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'umkmkectangerang@gmail.com' ||
+        (request.auth.token.email != null && request.auth.token.email.matches('.*@tangerangkota\\.go\\.id$'))
+      );
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        isBootstrapAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        exists(/databases/$(database)/documents/users/$(request.auth.uid))
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // USERS COLLECTION
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ADMINS MARKER COLLECTION
+    match /admins/{adminUid} {
+      allow read: if isSignedIn();
+      allow write: if isBootstrapAdmin();
+    }
+
+    // MEMBERS COLLECTION (Direktori UMKM & Keanggotaan)
+    match /members/{memberId} {
+      // Public can only read members that have opted in to public directory
+      allow get: if resource.data.isPublicDirectory == true || isAdmin();
+      allow list: if isAdmin() || (resource.data.isPublicDirectory == true);
+      allow create, update, delete: if isAdmin();
+    }
+
+    // TRANSACTIONS COLLECTION (Keuangan - STRICTLY PRIVATE)
+    match /transactions/{transactionId} {
+      allow read: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // EVENTS COLLECTION
+    match /events/{eventId} {
+      allow get: if resource.data.status == 'terbit' || resource.data.status == 'selesai' || isAdmin();
+      allow list: if resource.data.status == 'terbit' || resource.data.status == 'selesai' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ARTICLES COLLECTION (Kabar Berita)
+    match /articles/{articleId} {
+      allow get: if resource.data.status == 'terbit' || isAdmin();
+      allow list: if resource.data.status == 'terbit' || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ACTIVITY LOGS
+    match /activity_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isBootstrapAdmin();
+    }
+
+    // ORGANIZATION STRUCTURE (Profil Kepengurusan)
+    match /org_structure/{memberId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
