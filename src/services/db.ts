@@ -14,356 +14,9 @@ import { db, handleFirestoreError, OperationType } from '../lib/firebase';
 import { Member, Transaction, ForumEvent, Article, ActivityLog, UserProfile, OrgStructureMember } from '../types';
 
 // Initial realistic seed data for Forum UMKM KUAT Kecamatan Tangerang
-export const INITIAL_MEMBERS: Member[] = [
-  {
-    id: 'mem-001',
-    memberNumber: 'KUAT-TNG-2026-001',
-    fullName: 'Hj. Siti Rohmah',
-    nik: '3671014502780001',
-    phone: '081289234111',
-    email: 'siti.rohmah@gmail.com',
-    address: 'Jl. Daan Mogot No. 42 RT 02/RW 04',
-    kelurahan: 'Babakan',
-    status: 'aktif',
-    joinDate: '2025-01-15',
-    businessName: 'Dapur Mak Rohmah - Aneka Kue Basah & Nasi Uduk',
-    category: 'Kuliner',
-    topProduct: 'Kue Cucur Pandan & Tumpeng Mini',
-    businessAddress: 'Jl. Daan Mogot No. 42, Babakan',
-    businessPhone: '081289234111',
-    memberPhoto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80',
-    productPhoto: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, Sertifikat Halal MUI, P-IRT',
-    isPublicDirectory: true,
-    createdAt: '2025-01-15T08:00:00Z',
-    updatedAt: '2026-02-10T10:00:00Z',
-  },
-  {
-    id: 'mem-002',
-    memberNumber: 'KUAT-TNG-2026-002',
-    fullName: 'Bambang Sugito, S.E.',
-    nik: '3671011208800003',
-    phone: '081318459022',
-    email: 'bambang.kriya@gmail.com',
-    address: 'Komplek Kehakiman Blok C No. 12',
-    kelurahan: 'Buaran Indah',
-    status: 'aktif',
-    joinDate: '2025-02-01',
-    businessName: 'Tangerang Craft & Anyaman Bambu Lestari',
-    category: 'Kriya & Kerajinan',
-    topProduct: 'Tas Anyaman Bambu Modern & Hampers Kerajinan',
-    businessAddress: 'Jl. Veteran No. 15, Buaran Indah',
-    businessPhone: '081318459022',
-    memberPhoto: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=300&q=80',
-    productPhoto: 'https://images.unsplash.com/photo-1590736969955-71cc94801759?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, HKI Merek Terdaftar',
-    isPublicDirectory: true,
-    createdAt: '2025-02-01T09:30:00Z',
-    updatedAt: '2026-01-20T11:15:00Z',
-  },
-  {
-    id: 'mem-003',
-    memberNumber: 'KUAT-TNG-2026-003',
-    fullName: 'Nurul Hidayati',
-    nik: '3671015610850002',
-    phone: '085710223948',
-    email: 'nurul.hijab@gmail.com',
-    address: 'Jl. MH Thamrin Gg. Mandiri RT 01/RW 02',
-    kelurahan: 'Cikokol',
-    status: 'aktif',
-    joinDate: '2025-02-18',
-    businessName: 'Zaskia Hijab & Modest Fashion',
-    category: 'Fashion & Tekstil',
-    topProduct: 'Gamis Katun Rayon & Hijab Voal Digital Printing',
-    businessAddress: 'Ruko Cikokol Plaza No. 8',
-    businessPhone: '085710223948',
-    productPhoto: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB',
-    isPublicDirectory: true,
-    createdAt: '2025-02-18T10:00:00Z',
-    updatedAt: '2026-03-01T14:00:00Z',
-  },
-  {
-    id: 'mem-004',
-    memberNumber: 'KUAT-TNG-2026-004',
-    fullName: 'Ahmad Syafei',
-    nik: '3671012304750005',
-    phone: '081905332190',
-    email: 'syafei.kopi@yahoo.com',
-    address: 'Jl. Satria Sudirman No. 8',
-    kelurahan: 'Kelapa Indah',
-    status: 'aktif',
-    joinDate: '2025-03-05',
-    businessName: 'Roastery Kopi Benteng Tangerang',
-    category: 'Kuliner',
-    topProduct: 'Biji Kopi Robusta & Cold Brew Tangerang Blend',
-    businessAddress: 'Jl. Satria Sudirman No. 8, Kelapa Indah',
-    businessPhone: '081905332190',
-    productPhoto: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, P-IRT, Sertifikat Halal',
-    isPublicDirectory: true,
-    createdAt: '2025-03-05T08:45:00Z',
-    updatedAt: '2026-02-28T16:20:00Z',
-  },
-  {
-    id: 'mem-005',
-    memberNumber: 'KUAT-TNG-2026-005',
-    fullName: 'Dedi Kusnadi',
-    nik: '3671011809910004',
-    phone: '087788991200',
-    email: 'dedi.tanah.tinggi@gmail.com',
-    address: 'Jl. Benteng Betawi RT 03/RW 01',
-    kelurahan: 'Tanah Tinggi',
-    status: 'aktif',
-    joinDate: '2025-04-12',
-    businessName: 'Snack Renyah Tangerang - Keripik Singkong & Pisang Lumer',
-    category: 'Kuliner',
-    topProduct: 'Keripik Tempe Aneka Rasa & Keripik Pisang Keju',
-    businessAddress: 'Jl. Benteng Betawi No. 88, Tanah Tinggi',
-    businessPhone: '087788991200',
-    productPhoto: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, P-IRT',
-    isPublicDirectory: true,
-    createdAt: '2025-04-12T11:20:00Z',
-    updatedAt: '2026-01-15T09:30:00Z',
-  },
-  {
-    id: 'mem-006',
-    memberNumber: 'KUAT-TNG-2026-006',
-    fullName: 'Eka Wahyuni, Amd.Keb',
-    nik: '3671016703880002',
-    phone: '081290334811',
-    email: 'eka.herbal@gmail.com',
-    address: 'Jl. K.S. Tubun No. 22',
-    kelurahan: 'Sukarasa',
-    status: 'aktif',
-    joinDate: '2025-05-20',
-    businessName: 'Banten Herbal & Sabun Organik Alami',
-    category: 'Kesehatan & Kecantikan',
-    topProduct: 'Sabun Batang Daun Kelor & Minyak VCO Extra Virgin',
-    businessAddress: 'Jl. K.S. Tubun No. 22, Sukarasa',
-    businessPhone: '081290334811',
-    productPhoto: 'https://images.unsplash.com/photo-1608248597359-07d0f1712a7a?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, Izin Edar BPOM',
-    isPublicDirectory: true,
-    createdAt: '2025-05-20T13:00:00Z',
-    updatedAt: '2026-02-15T15:45:00Z',
-  },
-  {
-    id: 'mem-007',
-    memberNumber: 'KUAT-TNG-2026-007',
-    fullName: 'Rian Darmawan',
-    nik: '3671010507930006',
-    phone: '085811224567',
-    email: 'rian.printing@gmail.com',
-    address: 'Jl. A. Damyati No. 10',
-    kelurahan: 'Sukasari',
-    status: 'aktif',
-    joinDate: '2025-06-11',
-    businessName: 'Creative Point Digital & Packaging Label UMKM',
-    category: 'Jasa & Konsultasi',
-    topProduct: 'Stiker Kemasan Tahan Air & Cetak Dus Makanan Food Grade',
-    businessAddress: 'Jl. A. Damyati No. 10, Sukasari',
-    businessPhone: '085811224567',
-    productPhoto: 'https://images.unsplash.com/photo-1589330694653-dad6d3240a91?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, SIUP',
-    isPublicDirectory: true,
-    createdAt: '2025-06-11T14:30:00Z',
-    updatedAt: '2026-03-05T10:10:00Z',
-  },
-  {
-    id: 'mem-008',
-    memberNumber: 'KUAT-TNG-2026-008',
-    fullName: 'Lilis Mardiana',
-    nik: '3671015101820003',
-    phone: '082110998877',
-    email: 'lilis.sukasih@gmail.com',
-    address: 'Jl. Kali Pasir RT 04/RW 01',
-    kelurahan: 'Suka Asih',
-    status: 'aktif',
-    joinDate: '2025-07-01',
-    businessName: 'Warung Dimsum & Siomay Benteng Asli',
-    category: 'Kuliner',
-    topProduct: 'Siomay Ikan Tenggiri & Dimsum Mentai Halal',
-    businessAddress: 'Jl. Kali Pasir Pinggir Cisadane, Suka Asih',
-    businessPhone: '082110998877',
-    productPhoto: 'https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, Sertifikat Halal',
-    isPublicDirectory: true,
-    createdAt: '2025-07-01T09:00:00Z',
-    updatedAt: '2026-02-18T13:30:00Z',
-  },
-  {
-    id: 'mem-009',
-    memberNumber: 'KUAT-TNG-2026-009',
-    fullName: 'Rudi Hartono',
-    nik: '3671011504860007',
-    phone: '081389776655',
-    email: 'rudi.hidroponik@gmail.com',
-    address: 'Jl. Windu Asri Blok A No. 5',
-    kelurahan: 'Babakan',
-    status: 'aktif',
-    joinDate: '2025-08-14',
-    businessName: 'Kebun Kota Babakan - Sayur Hidroponik Segar',
-    category: 'Pertanian & Agro',
-    topProduct: 'Selada Romaine, Pakcoy Hidroponik & Melon Golden',
-    businessAddress: 'Jl. Windu Asri Blok A No. 5, Babakan',
-    businessPhone: '081389776655',
-    productPhoto: 'https://images.unsplash.com/photo-1557844352-761f2565b576?auto=format&fit=crop&w=600&q=80',
-    legalities: 'NIB, Sertifikasi Prima 3',
-    isPublicDirectory: true,
-    createdAt: '2025-08-14T08:15:00Z',
-    updatedAt: '2026-03-02T11:00:00Z',
-  },
-  {
-    id: 'mem-010',
-    memberNumber: 'KUAT-TNG-2026-010',
-    fullName: 'Winda Aryani',
-    nik: '3671014909950001',
-    phone: '085698765432',
-    email: 'winda.craft@gmail.com',
-    address: 'Jl. Dr. Sitanala No. 17',
-    kelurahan: 'Tanah Tinggi',
-    status: 'pending',
-    joinDate: '2026-02-01',
-    businessName: 'Glow Resin & Wooden Giftware',
-    category: 'Kriya & Kerajinan',
-    topProduct: 'Talenan Kayu Jati Kombinasi Resin & Coaster Cantik',
-    businessAddress: 'Jl. Dr. Sitanala No. 17, Tanah Tinggi',
-    businessPhone: '085698765432',
-    productPhoto: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=600&q=80',
-    legalities: 'Dalam Proses NIB',
-    isPublicDirectory: false, // Belum disetujui tampil
-    createdAt: '2026-02-01T10:00:00Z',
-    updatedAt: '2026-02-01T10:00:00Z',
-  },
-];
+export const INITIAL_MEMBERS: Member[] = [];
 
-export const INITIAL_TRANSACTIONS: Transaction[] = [
-  {
-    id: 'trx-001',
-    transactionNumber: 'TRX-2026-001',
-    type: 'pemasukan',
-    category: 'Saldo Awal Tahun 2026',
-    date: '2026-01-02',
-    amount: 15450000,
-    description: 'Saldo kas awal tahun buku 2026 Forum UMKM KUAT Kec. Tangerang',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    notes: 'Dipindahkan dari buku kas tahun 2025',
-    createdAt: '2026-01-02T09:00:00Z',
-    updatedAt: '2026-01-02T10:00:00Z',
-  },
-  {
-    id: 'trx-002',
-    transactionNumber: 'TRX-2026-002',
-    type: 'pemasukan',
-    category: 'Iuran Anggota',
-    date: '2026-01-15',
-    amount: 2500000,
-    description: 'Penerimaan iuran bulanan Januari 2026 (50 anggota x Rp 50.000)',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    createdAt: '2026-01-15T14:30:00Z',
-    updatedAt: '2026-01-15T15:00:00Z',
-  },
-  {
-    id: 'trx-003',
-    transactionNumber: 'TRX-2026-003',
-    type: 'pengeluaran',
-    category: 'Operasional Sekretariat',
-    date: '2026-01-20',
-    amount: 850000,
-    description: 'Pengadaan ATK, printer refill, dan konsumsi rapat koordinasi bulanan',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    proofUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=400&q=80',
-    createdAt: '2026-01-20T16:00:00Z',
-    updatedAt: '2026-01-20T16:30:00Z',
-  },
-  {
-    id: 'trx-004',
-    transactionNumber: 'TRX-2026-004',
-    type: 'pemasukan',
-    category: 'Bantuan & Hibah',
-    date: '2026-02-05',
-    amount: 10000000,
-    description: 'Dukungan Program Pembinaan UMKM dari Dinas Koperasi & UKM Kota Tangerang',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    notes: 'Alokasi untuk pelatihan digital marketing dan perizinan NIB',
-    createdAt: '2026-02-05T10:00:00Z',
-    updatedAt: '2026-02-05T11:00:00Z',
-  },
-  {
-    id: 'trx-005',
-    transactionNumber: 'TRX-2026-005',
-    type: 'pengeluaran',
-    category: 'Kegiatan & Bazar',
-    date: '2026-02-12',
-    amount: 3200000,
-    description: 'Sewa tenda sarnafil, sound system, dan spanduk Bazar Gebyar UMKM Cisadane',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    createdAt: '2026-02-12T13:45:00Z',
-    updatedAt: '2026-02-12T14:00:00Z',
-  },
-  {
-    id: 'trx-006',
-    transactionNumber: 'TRX-2026-006',
-    type: 'pemasukan',
-    category: 'Iuran Anggota',
-    date: '2026-02-18',
-    amount: 2750000,
-    description: 'Penerimaan iuran bulanan Februari 2026 (55 anggota x Rp 50.000)',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    createdAt: '2026-02-18T15:20:00Z',
-    updatedAt: '2026-02-18T16:00:00Z',
-  },
-  {
-    id: 'trx-007',
-    transactionNumber: 'TRX-2026-007',
-    type: 'pemasukan',
-    category: 'Sponsor & Donasi',
-    date: '2026-02-24',
-    amount: 3500000,
-    description: 'Sponsorship kemitraan perbankan BJB untuk fasilitasi QRIS UMKM',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    createdAt: '2026-02-24T11:00:00Z',
-    updatedAt: '2026-02-24T11:30:00Z',
-  },
-  {
-    id: 'trx-008',
-    transactionNumber: 'TRX-2026-008',
-    type: 'pengeluaran',
-    category: 'Pelatihan & Pembinaan',
-    date: '2026-03-02',
-    amount: 1800000,
-    description: 'Honor narasumber praktisi foto produk e-commerce & sertifikasi halal',
-    recorderName: 'Hj. Mardiah (Bendahara)',
-    recorderId: 'usr-bendahara',
-    approvalStatus: 'disetujui',
-    approvedBy: 'Emus Muslihant (Ketua Forum)',
-    createdAt: '2026-03-02T14:10:00Z',
-    updatedAt: '2026-03-02T15:00:00Z',
-  },
-];
+export const INITIAL_TRANSACTIONS: Transaction[] = [];
 
 export const INITIAL_EVENTS: ForumEvent[] = [
   {
@@ -554,6 +207,15 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
 // Helper to load or persist items with local cache fallbacks
 const LOCAL_STORAGE_PREFIX = 'umkm_mgmt_';
 
+// Auto wipe cached seed members & transactions once
+if (typeof window !== 'undefined') {
+  if (!localStorage.getItem('umkm_mgmt_data_cleared_v1')) {
+    localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'members');
+    localStorage.removeItem(LOCAL_STORAGE_PREFIX + 'transactions');
+    localStorage.setItem('umkm_mgmt_data_cleared_v1', 'true');
+  }
+}
+
 function getLocalData<T>(key: string, defaultValue: T): T {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
@@ -574,16 +236,59 @@ function setLocalData<T>(key: string, data: T) {
 
 // Data service methods
 export const dbService = {
+  // Clear all members and transactions completely
+  async clearAllMembersAndTransactions(): Promise<void> {
+    try {
+      const memSnap = await Promise.race([
+        getDocs(collection(db, 'members')),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+      ]);
+      if (memSnap?.docs) {
+        for (const d of memSnap.docs) {
+          await deleteDoc(d.ref).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn('Error clearing members in Firestore:', e);
+    }
+
+    try {
+      const trxSnap = await Promise.race([
+        getDocs(collection(db, 'transactions')),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+      ]);
+      if (trxSnap?.docs) {
+        for (const d of trxSnap.docs) {
+          await deleteDoc(d.ref).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn('Error clearing transactions in Firestore:', e);
+    }
+
+    setLocalData('members', []);
+    setLocalData('transactions', []);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('umkm_mgmt_data_cleared_v1', 'true');
+    }
+  },
+
   // MEMBERS
   async getMembers(): Promise<Member[]> {
     try {
       const q = query(collection(db, 'members'), orderBy('memberNumber', 'asc'));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
+      const snapshot = await Promise.race([
+        getDocs(q),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
+      if (snapshot && !snapshot.empty) {
         const list: Member[] = [];
-        snapshot.forEach((d) => list.push({ id: d.id, ...(d.data() as Omit<Member, 'id'>) }));
+        snapshot.forEach((d: any) => list.push({ id: d.id, ...(d.data() as Omit<Member, 'id'>) }));
         setLocalData('members', list);
         return list;
+      } else if (snapshot && snapshot.empty) {
+        setLocalData('members', []);
+        return [];
       }
     } catch (err) {
       console.warn('Firestore fetch failed, using local cache:', err);
@@ -595,7 +300,11 @@ export const dbService = {
 
   async saveMember(member: Member): Promise<void> {
     try {
-      await setDoc(doc(db, 'members', member.id), member);
+      const writePromise = setDoc(doc(db, 'members', member.id), member);
+      await Promise.race([
+        writePromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
     } catch (err) {
       console.warn('Firestore write failed, falling back to local storage:', err);
     }
@@ -611,7 +320,11 @@ export const dbService = {
 
   async deleteMember(id: string): Promise<void> {
     try {
-      await deleteDoc(doc(db, 'members', id));
+      const delPromise = deleteDoc(doc(db, 'members', id));
+      await Promise.race([
+        delPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
     } catch (err) {
       console.warn('Firestore delete failed:', err);
     }
@@ -624,12 +337,18 @@ export const dbService = {
   async getTransactions(): Promise<Transaction[]> {
     try {
       const q = query(collection(db, 'transactions'), orderBy('date', 'desc'));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
+      const snapshot = await Promise.race([
+        getDocs(q),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
+      if (snapshot && !snapshot.empty) {
         const list: Transaction[] = [];
-        snapshot.forEach((d) => list.push({ id: d.id, ...(d.data() as Omit<Transaction, 'id'>) }));
+        snapshot.forEach((d: any) => list.push({ id: d.id, ...(d.data() as Omit<Transaction, 'id'>) }));
         setLocalData('transactions', list);
         return list;
+      } else if (snapshot && snapshot.empty) {
+        setLocalData('transactions', []);
+        return [];
       }
     } catch (err) {
       console.warn('Firestore getTransactions failed, using local cache:', err);
@@ -802,12 +521,16 @@ export const dbService = {
 
   async saveOrgStructureMember(member: OrgStructureMember): Promise<void> {
     try {
-      await setDoc(doc(db, 'org_structure', member.id), {
+      const writePromise = setDoc(doc(db, 'org_structure', member.id), {
         ...member,
         updatedAt: new Date().toISOString(),
       });
+      await Promise.race([
+        writePromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
     } catch (err) {
-      console.warn('Firestore saveOrgStructureMember failed:', err);
+      console.warn('Firestore saveOrgStructureMember fallback to local:', err);
     }
     const current = await this.getOrgStructure();
     const idx = current.findIndex((m) => m.id === member.id);
@@ -822,7 +545,11 @@ export const dbService = {
 
   async deleteOrgStructureMember(id: string): Promise<void> {
     try {
-      await deleteDoc(doc(db, 'org_structure', id));
+      const delPromise = deleteDoc(doc(db, 'org_structure', id));
+      await Promise.race([
+        delPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+      ]);
     } catch (err) {
       console.warn('Firestore deleteOrgStructureMember failed:', err);
     }

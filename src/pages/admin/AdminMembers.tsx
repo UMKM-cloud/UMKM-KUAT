@@ -487,8 +487,29 @@ export const AdminMembers: React.FC<AdminMembersProps> = ({
             <tbody className="divide-y divide-slate-100">
               {filteredMembers.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
-                    Tidak ada data anggota yang sesuai kriteria pencarian.
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
+                    <div className="max-w-xs mx-auto space-y-2.5">
+                      <div className="h-12 w-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                        <Users className="w-6 h-6" />
+                      </div>
+                      <div className="font-bold text-slate-800 text-sm">Belum Ada Data Anggota</div>
+                      <p className="text-xs text-slate-500">
+                        {members.length === 0
+                          ? 'Basis data keanggotaan masih kosong. Silakan daftarkan anggota baru atau bagikan link pendaftaran.'
+                          : 'Tidak ada data anggota yang sesuai kriteria pencarian.'}
+                      </p>
+                      {members.length === 0 && (
+                        <div className="pt-2">
+                          <button
+                            onClick={handleOpenAdd}
+                            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Daftarkan Anggota Pertama</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (

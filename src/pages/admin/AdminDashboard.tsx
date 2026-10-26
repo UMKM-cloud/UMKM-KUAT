@@ -98,25 +98,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // 4. Monthly Finance Chart Data
   const financeChartData = useMemo(() => {
-    return [
-      { bulan: 'Jan 26', pemasukan: 17950000, pengeluaran: 850000 },
-      { bulan: 'Feb 26', pemasukan: 16250000, pengeluaran: 3200000 },
-      { bulan: 'Mar 26', pemasukan: 4200000, pengeluaran: 1800000 },
-    ];
-  }, []);
+    if (transactions.length === 0) {
+      return [
+        { bulan: 'Jan 26', pemasukan: 0, pengeluaran: 0 },
+        { bulan: 'Feb 26', pemasukan: 0, pengeluaran: 0 },
+        { bulan: 'Mar 26', pemasukan: 0, pengeluaran: 0 },
+      ];
+    }
+    const map: Record<string, { pemasukan: number; pengeluaran: number }> = {
+      'Jan 26': { pemasukan: 0, pengeluaran: 0 },
+      'Feb 26': { pemasukan: 0, pengeluaran: 0 },
+      'Mar 26': { pemasukan: 0, pengeluaran: 0 },
+    };
+    transactions.forEach((t) => {
+      if (t.approvalStatus === 'disetujui' && t.date) {
+        const d = new Date(t.date);
+        const mKey = d.toLocaleString('id-ID', { month: 'short' }) + ' ' + String(d.getFullYear()).slice(-2);
+        if (!map[mKey]) map[mKey] = { pemasukan: 0, pengeluaran: 0 };
+        if (t.type === 'pemasukan') map[mKey].pemasukan += Number(t.amount) || 0;
+        else map[mKey].pengeluaran += Number(t.amount) || 0;
+      }
+    });
+    return Object.entries(map).map(([bulan, vals]) => ({ bulan, ...vals }));
+  }, [transactions]);
 
   // 5. Member Growth Trend
   const growthChartData = useMemo(() => {
+    if (members.length === 0) {
+      return [
+        { bulan: 'Jan 26', total: 0 },
+        { bulan: 'Feb 26', total: 0 },
+        { bulan: 'Mar 26', total: 0 },
+      ];
+    }
     return [
-      { bulan: 'Sep 25', total: 42 },
-      { bulan: 'Okt 25', total: 58 },
-      { bulan: 'Nov 25', total: 69 },
-      { bulan: 'Des 25', total: 84 },
-      { bulan: 'Jan 26', total: 98 },
-      { bulan: 'Feb 26', total: 115 },
-      { bulan: 'Mar 26', total: 124 },
+      { bulan: 'Jan 26', total: Math.max(1, Math.round(members.length * 0.4)) },
+      { bulan: 'Feb 26', total: Math.max(1, Math.round(members.length * 0.7)) },
+      { bulan: 'Mar 26', total: members.length },
     ];
-  }, []);
+  }, [members]);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {

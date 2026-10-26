@@ -40,12 +40,15 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
   // Backup & restore state
   const [backupSuccess, setBackupSuccess] = useState<string | null>(null);
   const [restoreStatus, setRestoreStatus] = useState<string | null>(null);
+  const [clearStatus, setClearStatus] = useState<string | null>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
   // Organization Structure State
   const [orgList, setOrgList] = useState<OrgStructureMember[]>(INITIAL_ORG_STRUCTURE);
   const [editingMember, setEditingMember] = useState<OrgStructureMember | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [isSavingOrg, setIsSavingOrg] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load org structure
@@ -61,6 +64,30 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
       }
     } catch (err) {
       console.warn('Failed loading org structure:', err);
+    }
+  };
+
+  // Clear all membership and financial data
+  const handleClearAllData = async () => {
+    if (confirm('PERINGATAN: Apakah Anda yakin ingin MENGOSONGKAN SELURUH DATA KEANGGOTAAN dan DATA KEUANGAN? Semua data anggota UMKM dan transaksi kas akan dihapus bersih.')) {
+      setIsClearing(true);
+      try {
+        await dbService.clearAllMembersAndTransactions();
+        await dbService.addLog({
+          userId: profile?.uid || 'usr-admin',
+          userName: profile?.displayName || 'Admin',
+          action: 'Kosongkan Data Sistem',
+          target: 'Keanggotaan & Keuangan',
+          details: 'Mengosongkan semua data anggota dan riwayat transaksi kas',
+        });
+        onRefreshAll();
+        setClearStatus('Seluruh data keanggotaan dan keuangan berhasil dikosongkan!');
+        setTimeout(() => setClearStatus(null), 5000);
+      } catch (e: any) {
+        alert('Gagal mengosongkan data: ' + (e?.message || 'Terjadi kesalahan sistem'));
+      } finally {
+        setIsClearing(false);
+      }
     }
   };
 
@@ -149,30 +176,57 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
   };
 
   // Save Org Member
-  const handleSaveMember = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveMember = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!editingMember) return;
 
-    if (!editingMember.name.trim() || !editingMember.role.trim()) {
-      alert('Mohon isi nama lengkap dan jabatan.');
+    const trimmedName = (editingMember.name || '').trim();
+    const trimmedRole = (editingMember.role || '').trim();
+
+    if (!trimmedName) {
+      alert('Mohon isi nama lengkap pengurus.');
+      return;
+    }
+    if (!trimmedRole) {
+      alert('Mohon isi jabatan atau posisi pengurus.');
       return;
     }
 
-    await dbService.saveOrgStructureMember(editingMember);
-    await dbService.addLog({
-      userId: profile?.uid || 'usr-admin',
-      userName: profile?.displayName || 'Admin',
-      action: 'Perbarui Struktur Organisasi',
-      target: editingMember.name,
-      details: `${editingMember.role}: ${editingMember.name} (${editingMember.title})`,
-    });
+    setIsSavingOrg(true);
+    try {
+      const memberToSave: OrgStructureMember = {
+        ...editingMember,
+        name: trimmedName,
+        role: trimmedRole,
+        title: (editingMember.title || '').trim(),
+        image: (editingMember.image || '').trim() || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+        order: Number(editingMember.order) || orgList.length + 1,
+      };
 
-    await loadOrgStructure();
-    setIsModalOpen(false);
-    setEditingMember(null);
-    onRefreshAll();
-    setSaveSuccess(`Data ${editingMember.role} berhasil disimpan!`);
-    setTimeout(() => setSaveSuccess(null), 4000);
+      await dbService.saveOrgStructureMember(memberToSave);
+      await dbService.addLog({
+        userId: profile?.uid || 'usr-admin',
+        userName: profile?.displayName || 'Admin',
+        action: 'Perbarui Struktur Organisasi',
+        target: memberToSave.name,
+        details: `${memberToSave.role}: ${memberToSave.name} (${memberToSave.title})`,
+      });
+
+      await loadOrgStructure();
+      setIsModalOpen(false);
+      setEditingMember(null);
+      onRefreshAll();
+      setSaveSuccess(`Data pengurus "${memberToSave.name}" (${memberToSave.role}) berhasil disimpan!`);
+      setTimeout(() => setSaveSuccess(null), 4000);
+    } catch (err: any) {
+      console.error('Error saving org member:', err);
+      alert('Gagal menyimpan pengurus: ' + (err?.message || 'Terjadi kesalahan sistem'));
+    } finally {
+      setIsSavingOrg(false);
+    }
   };
 
   // Delete Org Member
@@ -599,6 +653,35 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
               </button>
             </div>
           </div>
+
+          {/* Section: Kosongkan Data Keanggotaan & Keuangan */}
+          <div className="p-5 rounded-2xl border border-red-200 bg-red-50/50 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 className="font-black text-red-900 text-sm flex items-center gap-2">
+                  <Trash2 className="w-4 h-4 text-red-600" />
+                  <span>Kosongkan Seluruh Data Keanggotaan & Keuangan</span>
+                </h4>
+                <p className="text-xs text-red-700 mt-1">
+                  Menghapus bersih seluruh data anggota UMKM dan transaksi buku kas agar basis data kosong dan siap digunakan dari awal.
+                </p>
+              </div>
+              <button
+                disabled={isClearing}
+                onClick={handleClearAllData}
+                className="px-4 py-2.5 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-xs"
+              >
+                {isClearing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                <span>{isClearing ? 'Mengosongkan...' : 'Kosongkan Data Sekarang'}</span>
+              </button>
+            </div>
+            {clearStatus && (
+              <div className="p-2.5 bg-green-100 border border-green-300 text-green-800 text-xs rounded-xl flex items-center gap-2 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-green-700" />
+                <span>{clearStatus}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -729,10 +812,10 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
                   Atau Masukkan URL Foto Eksternal (Opsional)
                 </label>
                 <input
-                  type="url"
-                  value={editingMember.image.startsWith('data:') ? '' : editingMember.image}
+                  type="text"
+                  value={editingMember.image?.startsWith('data:') ? '' : (editingMember.image || '')}
                   onChange={(e) => setEditingMember({ ...editingMember, image: e.target.value })}
-                  placeholder="https://..."
+                  placeholder="https://... atau path gambar"
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-teal-500 font-mono"
                 />
               </div>
@@ -746,7 +829,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
                   <input
                     type="text"
                     required
-                    value={editingMember.role}
+                    value={editingMember.role || ''}
                     onChange={(e) => setEditingMember({ ...editingMember, role: e.target.value })}
                     placeholder="Contoh: Pelindung, Ketua, Bendahara"
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-teal-500"
@@ -762,7 +845,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
                     min={1}
                     max={50}
                     required
-                    value={editingMember.order}
+                    value={editingMember.order || 1}
                     onChange={(e) => setEditingMember({ ...editingMember, order: parseInt(e.target.value) || 1 })}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-teal-500 text-center font-bold"
                   />
@@ -777,7 +860,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
                 <input
                   type="text"
                   required
-                  value={editingMember.name}
+                  value={editingMember.name || ''}
                   onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
                   placeholder="Contoh: Riswan Setyo Kardinto, S.STP"
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-teal-500 font-bold"
@@ -791,7 +874,7 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
                 </label>
                 <textarea
                   rows={2}
-                  value={editingMember.title}
+                  value={editingMember.title || ''}
                   onChange={(e) => setEditingMember({ ...editingMember, title: e.target.value })}
                   placeholder="Contoh: Camat Kecamatan Tangerang / Ketua Forum UMKM KUAT"
                   className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-hidden focus:border-teal-500 resize-none"
@@ -811,11 +894,22 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ logs, onRefreshAll
                   Batal
                 </button>
                 <button
-                  type="submit"
-                  className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
+                  type="button"
+                  disabled={isSavingOrg}
+                  onClick={(e) => handleSaveMember(e)}
+                  className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-bold rounded-xl shadow-md cursor-pointer flex items-center gap-1.5 transition-colors"
                 >
-                  <Check className="w-4 h-4" />
-                  <span>Simpan Perubahan</span>
+                  {isSavingOrg ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span>Simpan Perubahan</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

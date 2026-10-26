@@ -450,8 +450,29 @@ export const AdminFinances: React.FC<AdminFinancesProps> = ({
             <tbody className="divide-y divide-slate-100">
               {displayedTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
-                    Tidak ada catatan transaksi yang sesuai.
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
+                    <div className="max-w-xs mx-auto space-y-2.5">
+                      <div className="h-12 w-12 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                        <Wallet className="w-6 h-6" />
+                      </div>
+                      <div className="font-bold text-slate-800 text-sm">Belum Ada Catatan Kas</div>
+                      <p className="text-xs text-slate-500">
+                        {transactions.length === 0
+                          ? 'Buku kas masih kosong dengan saldo Rp 0. Silakan catat transaksi kas atau iuran pertama.'
+                          : 'Tidak ada catatan transaksi yang sesuai filter.'}
+                      </p>
+                      {transactions.length === 0 && (
+                        <div className="pt-2">
+                          <button
+                            onClick={() => handleOpenAdd()}
+                            className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Catat Transaksi Pertama</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
