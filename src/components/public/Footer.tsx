@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { UmkmKuatLogo } from '../UmkmKuatLogo';
-import { KELURAHAN_LIST } from '../../types';
+import { KELURAHAN_LIST, OrgContactInfo } from '../../types';
+import { dbService, INITIAL_CONTACT_INFO } from '../../services/db';
 import { MapPin, Phone, Mail, Clock, ShieldCheck, ExternalLink, Heart } from 'lucide-react';
 
 interface FooterProps {
@@ -9,6 +10,19 @@ interface FooterProps {
 }
 
 export const Footer: React.FC<FooterProps> = ({ setCurrentTab, openLoginModal }) => {
+  const [contactInfo, setContactInfo] = useState<OrgContactInfo>(INITIAL_CONTACT_INFO);
+
+  useEffect(() => {
+    const loadContact = async () => {
+      try {
+        const data = await dbService.getContactInfo();
+        if (data) setContactInfo(data);
+      } catch (e) {
+        // silent fallback
+      }
+    };
+    loadContact();
+  }, []);
   return (
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -133,19 +147,34 @@ export const Footer: React.FC<FooterProps> = ({ setCurrentTab, openLoginModal })
             </h4>
             <div className="flex items-start gap-2.5 text-slate-400">
               <MapPin className="w-4 h-4 text-teal-400 flex-shrink-0 mt-0.5" />
-              <span>Gedung Kantor Kecamatan Tangerang, Jl. Daan Mogot No. 5, Kota Tangerang, Banten 15111</span>
+              <span className="leading-relaxed">{contactInfo.address}</span>
             </div>
             <div className="flex items-center gap-2.5 text-slate-400">
               <Phone className="w-4 h-4 text-teal-400 flex-shrink-0" />
-              <span>(021) 5523456 / WA 0812-8923-4111</span>
+              <span>
+                {contactInfo.phone && <a href={`tel:${contactInfo.phone.replace(/[^0-9]/g, '')}`} className="hover:text-teal-300">{contactInfo.phone}</a>}
+                {contactInfo.phone && contactInfo.whatsapp && ' / '}
+                {contactInfo.whatsapp && (
+                  <a
+                    href={`https://wa.me/${(contactInfo.whatsapp || '').replace(/[^0-9]/g, '').replace(/^0/, '62')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-teal-300"
+                  >
+                    WA {contactInfo.whatsapp}
+                  </a>
+                )}
+              </span>
             </div>
             <div className="flex items-center gap-2.5 text-slate-400">
               <Mail className="w-4 h-4 text-teal-400 flex-shrink-0" />
-              <span>umkmkectangerang@gmail.com</span>
+              <a href={`mailto:${contactInfo.email}`} className="hover:text-teal-300 transition-colors">
+                {contactInfo.email}
+              </a>
             </div>
             <div className="flex items-center gap-2.5 text-slate-400 text-xs">
               <Clock className="w-4 h-4 text-teal-400 flex-shrink-0" />
-              <span>Senin - Jumat: 08.00 - 16.00 WIB</span>
+              <span>{contactInfo.operatingHours}</span>
             </div>
           </div>
         </div>

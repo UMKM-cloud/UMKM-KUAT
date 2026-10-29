@@ -194,6 +194,64 @@ function MainApp() {
     );
   }
 
+  // System Security Rule 4: STRICT ISOLATION - 403 Forbidden for 'member' role
+  if (profile.role === 'member') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center space-y-6 shadow-2xl border border-red-100 animate-in fade-in zoom-in-95 duration-200">
+          <div className="h-16 w-16 rounded-2xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center mx-auto shadow-inner">
+            <ShieldAlert className="w-9 h-9" />
+          </div>
+          
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100/80 text-red-700 text-xs font-mono font-bold uppercase tracking-wider border border-red-300">
+              Error 403 Forbidden &bull; Akses Ditolak
+            </div>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              Hak Akses Administratif Dibatasi
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Akun Anda terautentikasi dengan peran <strong className="text-slate-900">Member / Pendaftar</strong>. Sesuai prinsip <em>Least Privilege & Strict Isolation</em>, akun pendaftar tidak diizinkan masuk ke panel administrasi internal Forum UMKM KUAT.
+            </p>
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 text-left space-y-2 text-xs text-slate-700">
+            <span className="font-bold text-slate-900 block text-[11px] uppercase tracking-wider text-slate-400">
+              Hak Akses Anda (Least Privilege):
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
+              <span>Mengisi dan memperbarui formulir profil usaha mandiri</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
+              <span>Mengunggah dokumen legalitas & bukti pendaftaran Anda sendiri</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-500"></span>
+              <span>Mencetak Kartu Tanda Anggota (KTA) digital Anda</span>
+            </div>
+          </div>
+
+          <div className="space-y-2.5 pt-2">
+            <button
+              onClick={() => setCurrentTab('daftar')}
+              className="w-full flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold text-xs sm:text-sm shadow-md transition-colors cursor-pointer"
+            >
+              <span>Buka Formulir Pendaftaran / KTA Saya</span>
+            </button>
+            <button
+              onClick={() => setCurrentTab('beranda')}
+              className="w-full text-xs text-slate-500 hover:text-slate-800 font-semibold py-2 cursor-pointer"
+            >
+              Kembali ke Halaman Beranda Publik
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Authenticated Admin Dashboard Layout
   return (
     <div className="min-h-screen flex bg-slate-100 text-slate-800 font-sans">

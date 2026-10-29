@@ -35,7 +35,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'direktori', label: 'Direktori UMKM' },
     { id: 'event', label: 'Event & Kegiatan' },
     { id: 'berita', label: 'Kabar Berita' },
-    { id: 'daftar', label: 'Pendaftaran Anggota' },
     { id: 'kontak', label: 'Kontak' },
   ];
 

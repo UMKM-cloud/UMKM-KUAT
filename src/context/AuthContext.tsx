@@ -8,6 +8,8 @@ interface AuthContextType {
   profile: UserProfile | null;
   loading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  isMember: boolean;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   simulateRole: (role: UserRole) => void;
@@ -17,6 +19,7 @@ interface AuthContextType {
   canManageFinances: boolean;
   canManageEventsNews: boolean;
   canManageSettings: boolean;
+  canAssignRoles: boolean;
   canViewReports: boolean;
 }
 
@@ -35,22 +38,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!fbUser) return null;
     
     const savedRole = (localStorage.getItem(ROLE_STORAGE_KEY) as UserRole) || forcedRole;
-    
-    // Default to super_admin for admin email, or saved role
-    let role: UserRole = savedRole || 'super_admin';
-    if (!savedRole && fbUser.email?.toLowerCase().includes('bendahara')) {
-      role = 'bendahara';
-    } else if (!savedRole && fbUser.email?.toLowerCase().includes('informasi')) {
-      role = 'admin_informasi';
+    const isBootstrapAdmin = fbUser.email?.toLowerCase() === 'umkmkectangerang@gmail.com';
+
+    // System Security Rule 2: DEFAULT REGISTRATION ROLE IS 'member'
+    let role: UserRole = 'member';
+
+    if (isBootstrapAdmin) {
+      // System Security Rule 1: Bootstrap Super Admin
+      role = 'super_admin';
+    } else if (savedRole) {
+      role = savedRole;
     }
 
     return {
       uid: fbUser.uid,
-      email: fbUser.email || 'admin@umkmkuat-tangerang.org',
-      displayName: fbUser.displayName || 'Pengurus Forum UMKM KUAT',
+      email: fbUser.email || 'user@umkmkuat-tangerang.org',
+      displayName: fbUser.displayName || 'Pengguna Terdaftar',
       role,
       photoURL: fbUser.photoURL || undefined,
-      kelurahan: 'Kecamatan Tangerang (Semua)',
+      kelurahan: role === 'member' ? 'Kecamatan Tangerang' : 'Kecamatan Tangerang (Semua)',
     };
   };
 
@@ -144,14 +150,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  // RBAC Permission gates
+  // RBAC Permission gates (System Security Rule 4: Strict Isolation for 'member')
   const currentRole = profile?.role;
-  const isAdmin = Boolean(profile);
+  const isSuperAdmin = currentRole === 'super_admin';
+  const isMember = currentRole === 'member';
+  const isAdmin = Boolean(profile && currentRole !== 'member');
+
+  // System Security Rule 3: Least Privilege Principle
   const canManageMembers = ['super_admin', 'pengurus_kecamatan', 'admin_keanggotaan', 'pengurus_kelurahan'].includes(currentRole || '');
   const canManageFinances = ['super_admin', 'bendahara'].includes(currentRole || '');
   const canManageEventsNews = ['super_admin', 'pengurus_kecamatan', 'admin_informasi'].includes(currentRole || '');
-  const canManageSettings = currentRole === 'super_admin';
-  const canViewReports = Boolean(profile);
+  
+  // System Security Rule 1: Super Admin Control
+  const canManageSettings = isSuperAdmin;
+  const canAssignRoles = isSuperAdmin;
+  const canViewReports = isAdmin;
 
   return (
     <AuthContext.Provider
@@ -160,6 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         profile,
         loading,
         isAdmin,
+        isSuperAdmin,
+        isMember,
         loginWithGoogle,
         logout,
         simulateRole,
@@ -168,6 +183,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         canManageFinances,
         canManageEventsNews,
         canManageSettings,
+        canAssignRoles,
         canViewReports,
       }}
     >

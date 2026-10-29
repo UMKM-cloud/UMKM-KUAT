@@ -4,7 +4,8 @@ export type UserRole =
   | 'admin_keanggotaan'
   | 'bendahara'
   | 'admin_informasi'
-  | 'pengurus_kelurahan';
+  | 'pengurus_kelurahan'
+  | 'member';
 
 export interface UserProfile {
   uid: string;
@@ -144,5 +145,25 @@ export interface OrgStructureMember {
   title: string;
   image: string;
   order: number;
+  updatedAt?: string;
+}
+
+export interface OrgVisionMission {
+  vision: string;
+  missions: string[];
+  updatedAt?: string;
+}
+
+export interface OrgContactInfo {
+  officeName: string;
+  subTitle: string;
+  address: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  operatingHours: string;
+  googleMapsUrl?: string;
+  instagram?: string;
+  facebook?: string;
   updatedAt?: string;
 }

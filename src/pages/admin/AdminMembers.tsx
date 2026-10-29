@@ -4,6 +4,7 @@ import { dbService } from '../../services/db';
 import { useAuth } from '../../context/AuthContext';
 import { OFFICIAL_LOGO_URL } from '../../components/UmkmKuatLogo';
 import { MemberCardModal } from '../../components/MemberCardModal';
+import { compressImage } from '../../utils/image';
 import {
   Users,
   Search,
@@ -141,39 +142,33 @@ export const AdminMembers: React.FC<AdminMembersProps> = ({
     setModalOpen(true);
   };
 
-  // Upload Photo handlers
-  const handleMemberPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload Photo handlers with compression
+  const handleMemberPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('Pilih file gambar untuk foto anggota');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (event) => {
+    try {
+      const compressed = await compressImage(file, 500, 500, 0.82);
       setFormData((prev) => ({
         ...prev,
-        memberPhoto: event.target?.result as string,
+        memberPhoto: compressed,
       }));
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      alert('Gagal memproses foto anggota: ' + (err?.message || 'Format tidak didukung'));
+    }
   };
 
-  const handleProductPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProductPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      alert('Pilih file gambar untuk foto produk');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (event) => {
+    try {
+      const compressed = await compressImage(file, 600, 600, 0.82);
       setFormData((prev) => ({
         ...prev,
-        productPhoto: event.target?.result as string,
+        productPhoto: compressed,
       }));
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      alert('Gagal memproses foto produk: ' + (err?.message || 'Format tidak didukung'));
+    }
   };
 
   // Check duplication when NIK or Phone changes

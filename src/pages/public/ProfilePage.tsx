@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { KELURAHAN_LIST, OrgStructureMember } from '../../types';
-import { dbService, INITIAL_ORG_STRUCTURE } from '../../services/db';
+import { KELURAHAN_LIST, OrgStructureMember, OrgVisionMission } from '../../types';
+import { dbService, INITIAL_ORG_STRUCTURE, INITIAL_VISION_MISSION } from '../../services/db';
 import {
   ShieldCheck,
   Target,
@@ -18,6 +18,7 @@ import { UmkmKuatLogo } from '../../components/UmkmKuatLogo';
 
 export const ProfilePage: React.FC = () => {
   const [structure, setStructure] = useState<OrgStructureMember[]>(INITIAL_ORG_STRUCTURE);
+  const [visionMission, setVisionMission] = useState<OrgVisionMission>(INITIAL_VISION_MISSION);
 
   useEffect(() => {
     let isMounted = true;
@@ -26,18 +27,17 @@ export const ProfilePage: React.FC = () => {
         setStructure(res);
       }
     });
+
+    dbService.getVisionMission().then((res) => {
+      if (isMounted && res && res.vision) {
+        setVisionMission(res);
+      }
+    });
+
     return () => {
       isMounted = false;
     };
   }, []);
-
-  const missions = [
-    'Meningkatkan daya saing dan standar mutu produk UMKM di 8 kelurahan se-Kecamatan Tangerang.',
-    'Memfasilitasi kepemilikan legalitas usaha (NIB, Sertifikasi Halal, P-IRT, dan HKI) secara mudah, cepat, dan transparan.',
-    'Membangun akses permodalan, kemitraan strategis perbankan, dan fasilitasi pembayaran digital QRIS.',
-    'Mendorong digitalisasi pemasaran melalui katalog online, media sosial, dan marketplace nasional.',
-    'Menyelenggarakan kegiatan bazar berkala, temu bisnis, dan pameran produk unggulan Cisadane.',
-  ];
 
   return (
     <div className="space-y-16 py-12">
@@ -113,7 +113,7 @@ export const ProfilePage: React.FC = () => {
               </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold">Visi Organisasi</h3>
               <p className="text-base sm:text-lg text-slate-200 leading-relaxed italic">
-                &ldquo;Terwujudnya pelaku UMKM Kecamatan Tangerang yang mandiri, berdaya saing tinggi, tertib legalitas, dan menjadi motor penggerak perekonomian masyarakat yang inklusif serta berkelanjutan.&rdquo;
+                &ldquo;{visionMission.vision}&rdquo;
               </p>
             </div>
           </div>
@@ -129,9 +129,9 @@ export const ProfilePage: React.FC = () => {
               </span>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Misi Organisasi</h3>
               <ul className="space-y-3 text-slate-700 text-sm sm:text-base">
-                {missions.map((m, idx) => (
+                {visionMission.missions.map((m, idx) => (
                   <li key={idx} className="flex items-start gap-2.5">
-                    <CheckCircle className="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
                     <span>{m}</span>
                   </li>
                 ))}

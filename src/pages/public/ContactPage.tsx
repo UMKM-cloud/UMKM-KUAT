@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapPin,
   Phone,
@@ -11,9 +11,11 @@ import {
   Building,
   ExternalLink,
 } from 'lucide-react';
-import { KELURAHAN_LIST } from '../../types';
+import { KELURAHAN_LIST, OrgContactInfo } from '../../types';
+import { dbService, INITIAL_CONTACT_INFO } from '../../services/db';
 
 export const ContactPage: React.FC = () => {
+  const [contactInfo, setContactInfo] = useState<OrgContactInfo>(INITIAL_CONTACT_INFO);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -22,6 +24,20 @@ export const ContactPage: React.FC = () => {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const loadContact = async () => {
+      try {
+        const data = await dbService.getContactInfo();
+        if (data) {
+          setContactInfo(data);
+        }
+      } catch (err) {
+        console.warn('Failed loading contact info:', err);
+      }
+    };
+    loadContact();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,57 +88,88 @@ export const ContactPage: React.FC = () => {
               <span className="text-xs uppercase font-bold text-teal-400 tracking-wider">
                 Lokasi Sekretariat
               </span>
-              <h3 className="text-xl font-bold mt-1">Kantor Kecamatan Tangerang</h3>
+              <h3 className="text-xl font-bold mt-1">{contactInfo.officeName || 'Kantor Kecamatan Tangerang'}</h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Pemerintah Kota Tangerang, Provinsi Banten
+                {contactInfo.subTitle || 'Pemerintah Kota Tangerang, Provinsi Banten'}
               </p>
             </div>
 
             <div className="space-y-4 text-sm text-slate-300">
               <div className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                <span>
-                  Gedung Kantor Kecamatan Tangerang (Lantai Dasar & Pojok UMKM), Jl. Daan Mogot No. 5, Kelurahan Sukarasa, Kec. Tangerang, Kota Tangerang, Banten 15111
+                <span className="leading-relaxed">
+                  {contactInfo.address}
                 </span>
               </div>
 
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-teal-400 flex-shrink-0" />
-                <span>Telepon: (021) 5523456</span>
-              </div>
+              {contactInfo.phone && (
+                <div className="flex items-center gap-3">
+                  <Phone className="w-5 h-5 text-teal-400 flex-shrink-0" />
+                  <span>Telepon: <a href={`tel:${contactInfo.phone.replace(/[^0-9]/g, '')}`} className="hover:text-teal-300">{contactInfo.phone}</a></span>
+                </div>
+              )}
 
-              <div className="flex items-center gap-3">
-                <MessageSquare className="w-5 h-5 text-teal-400 flex-shrink-0" />
-                <span>Hotline WA: 0812-8923-4111</span>
-              </div>
+              {contactInfo.whatsapp && (
+                <div className="flex items-center gap-3">
+                  <MessageSquare className="w-5 h-5 text-teal-400 flex-shrink-0" />
+                  <span>Hotline WA: {contactInfo.whatsapp}</span>
+                </div>
+              )}
 
-              <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-teal-400 flex-shrink-0" />
-                <span>umkmkectangerang@gmail.com</span>
-              </div>
+              {contactInfo.email && (
+                <div className="flex items-center gap-3">
+                  <Mail className="w-5 h-5 text-teal-400 flex-shrink-0" />
+                  <a href={`mailto:${contactInfo.email}`} className="hover:text-teal-300 transition-colors">
+                    {contactInfo.email}
+                  </a>
+                </div>
+              )}
 
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-semibold text-white">Jam Layanan Konsultasi:</div>
-                  <div className="text-xs text-slate-400 mt-0.5">
-                    Senin &ndash; Jumat: 08.00 &ndash; 16.00 WIB
+              {contactInfo.operatingHours && (
+                <div className="flex items-start gap-3">
+                  <Clock className="w-5 h-5 text-teal-400 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <div className="font-semibold text-white">Jam Layanan Konsultasi:</div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      {contactInfo.operatingHours}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
-            <div className="pt-4 border-t border-slate-800">
-              <a
-                href="https://wa.me/6281289234111?text=Halo%20Sekretariat%20Forum%20UMKM%20KUAT%20Kecamatan%20Tangerang,%20saya%20ingin%20berkonsultasi"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all"
-              >
-                <span>Chat Langsung via WhatsApp</span>
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            </div>
+            {contactInfo.whatsapp && (
+              <div className="pt-4 border-t border-slate-800 space-y-3">
+                {(() => {
+                  const clean = (contactInfo.whatsapp || '').replace(/[^0-9]/g, '');
+                  const formatted = clean.startsWith('0') ? '62' + clean.slice(1) : clean;
+                  return (
+                    <a
+                      href={`https://wa.me/${formatted}?text=Halo%20Sekretariat%20Forum%20UMKM%20KUAT%20Kecamatan%20Tangerang,%20saya%20ingin%20berkonsultasi`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all"
+                    >
+                      <span>Chat Langsung via WhatsApp</span>
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  );
+                })()}
+
+                {contactInfo.googleMapsUrl && (
+                  <a
+                    href={contactInfo.googleMapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-xl font-bold text-xs transition-all border border-slate-700"
+                  >
+                    <MapPin className="w-3.5 h-3.5 text-teal-400" />
+                    <span>Petunjuk Lokasi Google Maps</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Quick Notice */}

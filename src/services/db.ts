@@ -11,7 +11,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db, handleFirestoreError, OperationType } from '../lib/firebase';
-import { Member, Transaction, ForumEvent, Article, ActivityLog, UserProfile, OrgStructureMember } from '../types';
+import { Member, Transaction, ForumEvent, Article, ActivityLog, UserProfile, OrgStructureMember, OrgVisionMission, OrgContactInfo } from '../types';
 
 // Initial realistic seed data for Forum UMKM KUAT Kecamatan Tangerang
 export const INITIAL_MEMBERS: Member[] = [];
@@ -201,6 +201,81 @@ export const INITIAL_ORG_STRUCTURE: OrgStructureMember[] = [
     title: 'Pengelolaan Kas, Iuran & Keuangan Forum',
     image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
     order: 6,
+  },
+];
+
+export const INITIAL_VISION_MISSION: OrgVisionMission = {
+  vision: 'Terwujudnya pelaku UMKM Kecamatan Tangerang yang mandiri, berdaya saing tinggi, tertib legalitas, dan menjadi motor penggerak perekonomian masyarakat yang inklusif serta berkelanjutan.',
+  missions: [
+    'Meningkatkan daya saing dan standar mutu produk UMKM di 8 kelurahan se-Kecamatan Tangerang.',
+    'Memfasilitasi kepemilikan legalitas usaha (NIB, Sertifikasi Halal, P-IRT, dan HKI) secara mudah, cepat, dan transparan.',
+    'Membangun akses permodalan, kemitraan strategis perbankan, dan fasilitasi pembayaran digital QRIS.',
+    'Mendorong digitalisasi pemasaran melalui katalog online, media sosial, dan marketplace nasional.',
+    'Menyelenggarakan kegiatan bazar berkala, temu bisnis, dan pameran produk unggulan Cisadane.',
+  ],
+};
+
+export const INITIAL_CONTACT_INFO: OrgContactInfo = {
+  officeName: 'Kantor Kecamatan Tangerang',
+  subTitle: 'Pemerintah Kota Tangerang, Provinsi Banten',
+  address: 'Gedung Kantor Kecamatan Tangerang (Lantai Dasar & Pojok UMKM), Jl. Daan Mogot No. 5, Kelurahan Sukarasa, Kec. Tangerang, Kota Tangerang, Banten 15111',
+  phone: '(021) 5523456',
+  whatsapp: '0812-8923-4111',
+  email: 'umkmkectangerang@gmail.com',
+  operatingHours: 'Senin – Jumat: 08.00 – 16.00 WIB',
+  googleMapsUrl: 'https://maps.google.com/?q=Kantor+Kecamatan+Tangerang',
+  instagram: '@umkmkuattangerang',
+  facebook: 'Forum UMKM KUAT Kec Tangerang',
+};
+
+export const INITIAL_USERS: UserProfile[] = [
+  {
+    uid: 'usr-admin-01',
+    email: 'umkmkectangerang@gmail.com',
+    displayName: 'Riswan Setyo Kardinto, S.STP',
+    role: 'super_admin',
+    kelurahan: 'Semua Kelurahan (Kecamatan)',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    uid: 'usr-ketua-02',
+    email: 'ketua.umkm@tangerangkota.go.id',
+    displayName: 'EMus Muslihant',
+    role: 'pengurus_kecamatan',
+    kelurahan: 'Semua Kelurahan (Kecamatan)',
+    createdAt: '2026-01-05T08:00:00Z',
+  },
+  {
+    uid: 'usr-keanggotaan-03',
+    email: 'keanggotaan@umkmkuat-tangerang.org',
+    displayName: 'Ferry Juni Purwanto',
+    role: 'admin_keanggotaan',
+    kelurahan: 'Semua Kelurahan (Kecamatan)',
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    uid: 'usr-bendahara-04',
+    email: 'bendahara@umkmkuat-tangerang.org',
+    displayName: 'Peni Martin',
+    role: 'bendahara',
+    kelurahan: 'Semua Kelurahan (Kecamatan)',
+    createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    uid: 'usr-informasi-05',
+    email: 'informasi@umkmkuat-tangerang.org',
+    displayName: 'DIna Fatrian S.I.Kom',
+    role: 'admin_informasi',
+    kelurahan: 'Semua Kelurahan (Kecamatan)',
+    createdAt: '2026-01-15T08:00:00Z',
+  },
+  {
+    uid: 'usr-babakan-06',
+    email: 'babakan@umkmkuat-tangerang.org',
+    displayName: 'Koordinator UMKM Babakan',
+    role: 'pengurus_kelurahan',
+    kelurahan: 'Babakan',
+    createdAt: '2026-01-20T08:00:00Z',
   },
 ];
 
@@ -504,68 +579,224 @@ export const dbService = {
 
   // ORGANIZATION STRUCTURE (Struktur Pengurus Organisasi)
   async getOrgStructure(): Promise<OrgStructureMember[]> {
+    const local = getLocalData<OrgStructureMember[]>('org_structure', INITIAL_ORG_STRUCTURE);
     try {
       const q = query(collection(db, 'org_structure'), orderBy('order', 'asc'));
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
+      const snapshot = await Promise.race([
+        getDocs(q),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+      ]);
+      if (snapshot && !snapshot.empty) {
         const list: OrgStructureMember[] = [];
         snapshot.forEach((d) => list.push({ id: d.id, ...(d.data() as Omit<OrgStructureMember, 'id'>) }));
         setLocalData('org_structure', list);
         return list;
       }
     } catch (err) {
-      console.warn('Firestore getOrgStructure failed:', err);
+      console.warn('Firestore getOrgStructure fallback to local cache:', err);
     }
-    return getLocalData<OrgStructureMember[]>('org_structure', INITIAL_ORG_STRUCTURE);
+    return local;
   },
 
   async saveOrgStructureMember(member: OrgStructureMember): Promise<void> {
+    const payload: OrgStructureMember = {
+      ...member,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // 1. Immediately update local storage so data is never lost regardless of network state
+    const current = getLocalData<OrgStructureMember[]>('org_structure', INITIAL_ORG_STRUCTURE);
+    const idx = current.findIndex((m) => m.id === member.id);
+    if (idx >= 0) {
+      current[idx] = payload;
+    } else {
+      current.push(payload);
+    }
+    current.sort((a, b) => a.order - b.order);
+    setLocalData('org_structure', current);
+
+    // 2. Persist to Firestore with generous timeout
     try {
-      const writePromise = setDoc(doc(db, 'org_structure', member.id), {
-        ...member,
-        updatedAt: new Date().toISOString(),
-      });
+      const writePromise = setDoc(doc(db, 'org_structure', member.id), payload);
       await Promise.race([
         writePromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
       ]);
     } catch (err) {
       console.warn('Firestore saveOrgStructureMember fallback to local:', err);
     }
-    const current = await this.getOrgStructure();
-    const idx = current.findIndex((m) => m.id === member.id);
-    if (idx >= 0) {
-      current[idx] = { ...member, updatedAt: new Date().toISOString() };
-    } else {
-      current.push({ ...member, updatedAt: new Date().toISOString() });
-    }
-    current.sort((a, b) => a.order - b.order);
-    setLocalData('org_structure', current);
   },
 
   async deleteOrgStructureMember(id: string): Promise<void> {
+    // 1. Immediately update local storage
+    const current = getLocalData<OrgStructureMember[]>('org_structure', INITIAL_ORG_STRUCTURE);
+    const updated = current.filter((m) => m.id !== id);
+    setLocalData('org_structure', updated);
+
+    // 2. Delete from Firestore
     try {
       const delPromise = deleteDoc(doc(db, 'org_structure', id));
       await Promise.race([
         delPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
       ]);
     } catch (err) {
-      console.warn('Firestore deleteOrgStructureMember failed:', err);
+      console.warn('Firestore deleteOrgStructureMember fallback to local:', err);
     }
-    const current = await this.getOrgStructure();
-    setLocalData('org_structure', current.filter((m) => m.id !== id));
+  },
+
+  // USER MANAGEMENT & HAK AKSES (RBAC)
+  async getUsers(): Promise<UserProfile[]> {
+    const local = getLocalData<UserProfile[]>('users', INITIAL_USERS);
+    try {
+      const q = query(collection(db, 'users'));
+      const snapshot = await Promise.race([
+        getDocs(q),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+      ]);
+      if (snapshot && !snapshot.empty) {
+        const list: UserProfile[] = [];
+        snapshot.forEach((d) => list.push({ uid: d.id, ...(d.data() as Omit<UserProfile, 'uid'>) }));
+        setLocalData('users', list);
+        return list;
+      }
+    } catch (err) {
+      console.warn('Firestore getUsers fallback to local cache:', err);
+    }
+    return local;
+  },
+
+  async saveUserProfile(user: UserProfile): Promise<void> {
+    const payload: UserProfile = {
+      ...user,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // 1. Immediately update local storage
+    const current = getLocalData<UserProfile[]>('users', INITIAL_USERS);
+    const idx = current.findIndex((u) => u.uid === user.uid || u.email.toLowerCase() === user.email.toLowerCase());
+    if (idx >= 0) {
+      current[idx] = payload;
+    } else {
+      current.push(payload);
+    }
+    setLocalData('users', current);
+
+    // 2. Persist to Firestore
+    try {
+      const writePromise = setDoc(doc(db, 'users', user.uid), payload);
+      await Promise.race([
+        writePromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
+      ]);
+    } catch (err) {
+      console.warn('Firestore saveUserProfile fallback to local:', err);
+    }
+  },
+
+  async deleteUserProfile(uid: string): Promise<void> {
+    // 1. Immediately update local storage
+    const current = getLocalData<UserProfile[]>('users', INITIAL_USERS);
+    const updated = current.filter((u) => u.uid !== uid);
+    setLocalData('users', updated);
+
+    // 2. Delete from Firestore
+    try {
+      const delPromise = deleteDoc(doc(db, 'users', uid));
+      await Promise.race([
+        delPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
+      ]);
+    } catch (err) {
+      console.warn('Firestore deleteUserProfile fallback to local:', err);
+    }
+  },
+
+  // VISI & MISI ORGANISASI
+  async getVisionMission(): Promise<OrgVisionMission> {
+    const local = getLocalData<OrgVisionMission | null>('vision_mission', null);
+    try {
+      const docSnap = await Promise.race([
+        getDoc(doc(db, 'org_settings', 'vision_mission')),
+        new Promise<any>((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500)),
+      ]);
+      if (docSnap && docSnap.exists()) {
+        const data = docSnap.data() as OrgVisionMission;
+        setLocalData('vision_mission', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('Firestore getVisionMission fallback to local cache:', err);
+    }
+    return local || INITIAL_VISION_MISSION;
+  },
+
+  async saveVisionMission(data: OrgVisionMission): Promise<void> {
+    const payload: OrgVisionMission = {
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      const writePromise = setDoc(doc(db, 'org_settings', 'vision_mission'), payload);
+      await Promise.race([
+        writePromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500)),
+      ]);
+    } catch (err) {
+      console.warn('Firestore saveVisionMission fallback to local:', err);
+    }
+    setLocalData('vision_mission', payload);
+  },
+
+  // CONTACT & SERVICES SETTINGS
+  async getContactInfo(): Promise<OrgContactInfo> {
+    const local = getLocalData<OrgContactInfo | null>('contact_info', null);
+    try {
+      const docRef = doc(db, 'org_settings', 'contact_info');
+      const docSnap = await Promise.race([
+        getDoc(docRef),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 1500)),
+      ]);
+      if (docSnap && docSnap.exists()) {
+        const data = docSnap.data() as OrgContactInfo;
+        setLocalData('contact_info', data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('Firestore getContactInfo fallback to local cache:', err);
+    }
+    return local || INITIAL_CONTACT_INFO;
+  },
+
+  async saveContactInfo(data: OrgContactInfo): Promise<void> {
+    const payload: OrgContactInfo = {
+      ...data,
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      const writePromise = setDoc(doc(db, 'org_settings', 'contact_info'), payload);
+      await Promise.race([
+        writePromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500)),
+      ]);
+    } catch (err) {
+      console.warn('Firestore saveContactInfo fallback to local:', err);
+    }
+    setLocalData('contact_info', payload);
   },
 
   // DATA BACKUP & RESTORE
   async exportFullBackup(): Promise<string> {
-    const [members, transactions, events, articles, logs, orgStructure] = await Promise.all([
+    const [members, transactions, events, articles, logs, orgStructure, visionMission, contactInfo, users] = await Promise.all([
       this.getMembers(),
       this.getTransactions(),
       this.getEvents(),
       this.getArticles(),
       this.getLogs(),
       this.getOrgStructure(),
+      this.getVisionMission(),
+      this.getContactInfo(),
+      this.getUsers(),
     ]);
 
     const backup = {
@@ -579,6 +810,9 @@ export const dbService = {
         articles,
         logs,
         orgStructure,
+        visionMission,
+        contactInfo,
+        users,
       },
     };
     return JSON.stringify(backup, null, 2);
@@ -588,7 +822,7 @@ export const dbService = {
     try {
       const parsed = JSON.parse(jsonString);
       if (!parsed.data) throw new Error('Format cadangan tidak valid');
-      const { members, transactions, events, articles, logs, orgStructure } = parsed.data;
+      const { members, transactions, events, articles, logs, orgStructure, visionMission, contactInfo, users } = parsed.data;
 
       if (Array.isArray(members)) setLocalData('members', members);
       if (Array.isArray(transactions)) setLocalData('transactions', transactions);
@@ -596,6 +830,9 @@ export const dbService = {
       if (Array.isArray(articles)) setLocalData('articles', articles);
       if (Array.isArray(logs)) setLocalData('activity_logs', logs);
       if (Array.isArray(orgStructure)) setLocalData('org_structure', orgStructure);
+      if (visionMission && typeof visionMission === 'object') setLocalData('vision_mission', visionMission);
+      if (contactInfo && typeof contactInfo === 'object') setLocalData('contact_info', contactInfo);
+      if (Array.isArray(users)) setLocalData('users', users);
 
       return true;
     } catch (err) {
@@ -612,5 +849,8 @@ export const dbService = {
     setLocalData('articles', INITIAL_ARTICLES);
     setLocalData('activity_logs', INITIAL_LOGS);
     setLocalData('org_structure', INITIAL_ORG_STRUCTURE);
+    setLocalData('vision_mission', INITIAL_VISION_MISSION);
+    setLocalData('contact_info', INITIAL_CONTACT_INFO);
+    setLocalData('users', INITIAL_USERS);
   },
 };

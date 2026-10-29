@@ -90,6 +90,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     bendahara: 'Bendahara',
     admin_informasi: 'Admin Informasi',
     pengurus_kelurahan: 'Pengurus Kelurahan',
+    member: 'Member / Pendaftar',
   };
 
   return (
