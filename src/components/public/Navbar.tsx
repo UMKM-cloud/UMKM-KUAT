@@ -104,7 +104,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Action / Admin Button */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3">
             {profile ? (
               <button
                 onClick={() => setCurrentTab('admin')}
@@ -127,8 +127,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex sm:hidden items-center gap-2">
+          {/* Mobile & Tablet Menu Button */}
+          <div className="flex lg:hidden items-center gap-2">
             {profile && (
               <button
                 onClick={() => handleNavClick('admin')}
@@ -149,9 +149,9 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile & Tablet Drawer */}
       {mobileMenuOpen && (
-        <div className="sm:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 shadow-xl animate-in fade-in slide-in-from-top duration-200">
+        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 shadow-xl animate-in fade-in slide-in-from-top duration-200">
           <div className="flex flex-col gap-1.5 mb-4">
             {navLinks.map((link) => {
               const isActive = currentTab === link.id;

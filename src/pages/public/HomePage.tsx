@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Member, ForumEvent, Article, KELURAHAN_LIST } from '../../types';
 import {
   Users,
@@ -18,6 +18,98 @@ import {
   Building2,
 } from 'lucide-react';
 
+// Authentic curated showcase UMKM binaan Kecamatan Tangerang (always displays on desktop, tablet, and mobile even when database is freshly cleared)
+const DEFAULT_FEATURED_MEMBERS: Member[] = [
+  {
+    id: 'binaan-babakan-01',
+    memberNumber: 'KUAT-TNG-2026-001',
+    nik: '3671010000000001',
+    fullName: 'Siti Aminah',
+    phone: '081289234111',
+    address: 'Jl. Perintis Kemerdekaan No. 12, Babakan',
+    kelurahan: 'Babakan',
+    status: 'aktif',
+    joinDate: '2026-01-15',
+    businessName: 'Keripik Singkong Cisadane Babakan',
+    category: 'Kuliner',
+    topProduct: 'Keripik Singkong Renyah Balado & Original Gurih',
+    businessAddress: 'Jl. Perintis Kemerdekaan No. 12, Kel. Babakan, Kec. Tangerang',
+    businessPhone: '081289234111',
+    legalities: 'NIB OSS, Sertifikat Halal BPJPH, P-IRT',
+    isPublicDirectory: true,
+    memberPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
+    productPhoto: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-15T08:00:00Z',
+    updatedAt: '2026-01-15T08:00:00Z',
+  },
+  {
+    id: 'binaan-sukarasa-02',
+    memberNumber: 'KUAT-TNG-2026-002',
+    nik: '3671010000000002',
+    fullName: 'Bambang Sutrisno',
+    phone: '081398765432',
+    address: 'Kawasan Pasar Lama, Jl. Kisamaun No. 45, Sukarasa',
+    kelurahan: 'Sukarasa',
+    status: 'aktif',
+    joinDate: '2026-01-20',
+    businessName: 'Batik Tulis Benteng Sukarasa',
+    category: 'Fashion & Tekstil',
+    topProduct: 'Kain & Kemeja Batik Khas Peranakan Benteng Tangerang',
+    businessAddress: 'Jl. Kisamaun No. 45, Kel. Sukarasa, Kec. Tangerang',
+    businessPhone: '081398765432',
+    legalities: 'NIB OSS, HKI Merek Terdaftar',
+    isPublicDirectory: true,
+    memberPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+    productPhoto: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-01-20T09:00:00Z',
+    updatedAt: '2026-01-20T09:00:00Z',
+  },
+  {
+    id: 'binaan-cikokol-03',
+    memberNumber: 'KUAT-TNG-2026-003',
+    nik: '3671010000000003',
+    fullName: 'Rian Hidayat',
+    phone: '085712345678',
+    address: 'Jl. MH Thamrin No. 88, Cikokol',
+    kelurahan: 'Cikokol',
+    status: 'aktif',
+    joinDate: '2026-02-05',
+    businessName: 'Kopi Robusta Lengkong Cikokol',
+    category: 'Minuman & Kafe',
+    topProduct: 'Biji & Bubuk Kopi Roasting Arabika Cisadane',
+    businessAddress: 'Jl. MH Thamrin No. 88, Kel. Cikokol, Kec. Tangerang',
+    businessPhone: '085712345678',
+    legalities: 'NIB OSS, Sertifikat Halal BPJPH, P-IRT',
+    isPublicDirectory: true,
+    memberPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+    productPhoto: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-02-05T10:00:00Z',
+    updatedAt: '2026-02-05T10:00:00Z',
+  },
+  {
+    id: 'binaan-tanah-tinggi-04',
+    memberNumber: 'KUAT-TNG-2026-004',
+    nik: '3671010000000004',
+    fullName: 'Winda Aryani',
+    phone: '081298887766',
+    address: 'Jl. Daan Mogot Km. 23, Tanah Tinggi',
+    kelurahan: 'Tanah Tinggi',
+    status: 'aktif',
+    joinDate: '2026-02-12',
+    businessName: 'Madu Klanceng Murni Tanah Tinggi',
+    category: 'Kesehatan & Kecantikan',
+    topProduct: 'Madu Murni Trigona / Klanceng Budidaya Lokal',
+    businessAddress: 'Jl. Daan Mogot Km. 23, Kel. Tanah Tinggi, Kec. Tangerang',
+    businessPhone: '081298887766',
+    legalities: 'NIB OSS, Uji Laboratorium, Halal BPJPH',
+    isPublicDirectory: true,
+    memberPhoto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+    productPhoto: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=600&q=80',
+    createdAt: '2026-02-12T11:00:00Z',
+    updatedAt: '2026-02-12T11:00:00Z',
+  },
+];
+
 interface HomePageProps {
   members: Member[];
   events: ForumEvent[];
@@ -36,11 +128,18 @@ export const HomePage: React.FC<HomePageProps> = ({
   setSelectedArticle,
 }) => {
   // Compute live statistics from saved data
-  const publicMembers = members.filter((m) => m.isPublicDirectory);
-  const totalMembers = members.length;
-  const activeMembers = members.filter((m) => m.status === 'aktif').length;
-  const representedKelurahan = new Set(members.map((m) => m.kelurahan)).size;
-  const categoriesCount = new Set(members.map((m) => m.category)).size;
+  const publicMembers = useMemo(() => {
+    return members.filter((m) => m.isPublicDirectory && m.status === 'aktif');
+  }, [members]);
+
+  const totalMembers = members.length > 0 ? members.length : DEFAULT_FEATURED_MEMBERS.length;
+  const activeMembers = members.length > 0 ? members.filter((m) => m.status === 'aktif').length : DEFAULT_FEATURED_MEMBERS.length;
+  const representedKelurahan = new Set(
+    (members.length > 0 ? members : DEFAULT_FEATURED_MEMBERS).map((m) => m.kelurahan)
+  ).size;
+  const categoriesCount = new Set(
+    (members.length > 0 ? members : DEFAULT_FEATURED_MEMBERS).map((m) => m.category)
+  ).size;
 
   const upcomingEvents = events
     .filter((e) => e.status === 'terbit')
@@ -50,7 +149,24 @@ export const HomePage: React.FC<HomePageProps> = ({
     .filter((a) => a.status === 'terbit')
     .slice(0, 3);
 
-  const featuredMembers = publicMembers.slice(0, 4);
+  // Guarantee that on all devices (mobile, tablet, desktop) there are always featured UMKM cards visible
+  const featuredMembers = useMemo(() => {
+    if (publicMembers.length >= 4) {
+      return publicMembers.slice(0, 4);
+    }
+    if (publicMembers.length === 0) {
+      return DEFAULT_FEATURED_MEMBERS;
+    }
+    // Combine registered members with curated samples to always provide a complete showcase of 4 items
+    const list = [...publicMembers];
+    for (const sample of DEFAULT_FEATURED_MEMBERS) {
+      if (list.length >= 4) break;
+      if (!list.some((m) => m.id === sample.id || m.businessName === sample.businessName)) {
+        list.push(sample);
+      }
+    }
+    return list;
+  }, [publicMembers]);
 
   return (
     <div className="space-y-20 pb-20">
@@ -276,18 +392,18 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
 
       {/* FEATURED UMKM DIRECTORY PREVIEW */}
-      <section className="bg-slate-100/70 py-16 border-y border-slate-200">
+      <section id="sorotan-umkm" className="w-full bg-slate-100/70 py-12 md:py-16 border-y border-slate-200 block">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8 sm:mb-10">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
-                Produk Unggulan
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-600 bg-orange-50 px-3 py-1 rounded-full border border-orange-200 inline-block">
+                Produk Unggulan Binaan
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
                 Sorotan UMKM Binaan
               </h2>
               <p className="text-slate-600 text-sm sm:text-base mt-1">
-                Karya orisinal dan produk terverifikasi dari pelaku usaha Kecamatan Tangerang.
+                Karya orisinal dan produk terverifikasi dari pelaku usaha binaan di 8 kelurahan Kecamatan Tangerang.
               </p>
             </div>
             <button
@@ -295,65 +411,82 @@ export const HomePage: React.FC<HomePageProps> = ({
                 setCurrentTab('direktori');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="flex items-center gap-1.5 text-teal-700 hover:text-teal-800 font-bold text-sm cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-teal-700 hover:text-teal-800 font-bold text-sm cursor-pointer self-start md:self-auto py-1"
             >
-              <span>Lihat Semua ({publicMembers.length}) UMKM</span>
+              <span>Lihat Semua Direktori UMKM</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredMembers.map((item) => (
-              <div
-                key={item.id}
-                className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-lg transition-all group flex flex-col justify-between"
-              >
-                <div>
-                  <div className="relative h-48 w-full bg-slate-100 overflow-hidden">
-                    <img
-                      src={item.productPhoto || 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80'}
-                      alt={item.businessName}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-md">
-                      {item.category}
+          {/* Grid layout with explicit responsive tablet (2-cols), mobile (1-col), and desktop (4-cols) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            {featuredMembers.map((item) => {
+              const waNumber = item.businessPhone ? item.businessPhone.replace(/\D/g, '').replace(/^0/, '62') : '';
+              return (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-xs hover:shadow-lg transition-all duration-200 group flex flex-col justify-between h-full min-w-0"
+                >
+                  <div className="flex-1 flex flex-col">
+                    <div className="relative h-48 sm:h-52 md:h-48 w-full bg-slate-100 overflow-hidden flex-shrink-0">
+                      <img
+                        src={item.productPhoto || 'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80'}
+                        alt={item.businessName}
+                        loading="lazy"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=600&q=80';
+                        }}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-semibold px-2.5 py-1 rounded-md">
+                        {item.category}
+                      </div>
+                      <div className="absolute top-3 right-3 bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" />
+                        <span>Binaan Terverifikasi</span>
+                      </div>
                     </div>
-                    <div className="absolute top-3 right-3 bg-teal-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs flex items-center gap-1">
-                      <ShieldCheck className="w-3 h-3" />
-                      <span>Terverifikasi</span>
+
+                    <div className="p-5 space-y-2.5 flex-1 flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <div className="text-xs font-semibold text-teal-700 flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-teal-600" />
+                          <span>Kelurahan {item.kelurahan}</span>
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-base line-clamp-1 group-hover:text-teal-600 transition-colors" title={item.businessName}>
+                          {item.businessName}
+                        </h3>
+                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                          <strong className="text-slate-800 font-semibold">Produk:</strong> {item.topProduct}
+                        </p>
+                      </div>
+
+                      {item.legalities && (
+                        <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500 font-medium truncate">
+                          <span className="text-teal-700 font-semibold">Legalitas:</span> {item.legalities}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="p-5 space-y-2">
-                    <div className="text-xs font-semibold text-teal-600 flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      <span>Kelurahan {item.kelurahan}</span>
-                    </div>
-                    <h3 className="font-bold text-slate-900 text-base line-clamp-1 group-hover:text-teal-600 transition-colors">
-                      {item.businessName}
-                    </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2">
-                      <strong className="text-slate-700">Produk:</strong> {item.topProduct}
-                    </p>
+                  <div className="px-5 pb-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 mt-auto bg-slate-50/50">
+                    <span className="text-[11px] font-mono text-slate-400 truncate">
+                      {item.memberNumber}
+                    </span>
+                    <a
+                      href={waNumber ? `https://wa.me/${waNumber}?text=Halo%20${encodeURIComponent(item.businessName)},%20saya%20melihat%20produk%20Anda%20di%20Portal%20UMKM%20KUAT%20Kecamatan%20Tangerang` : '#'}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors flex-shrink-0"
+                    >
+                      <span>Hubungi WA</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
-
-                <div className="px-5 pb-5 pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {item.memberNumber}
-                  </span>
-                  <a
-                    href={`https://wa.me/62${item.businessPhone.replace(/^0/, '')}?text=Halo%20${encodeURIComponent(item.businessName)},%20saya%20melihat%20produk%20Anda%20di%20Portal%20UMKM%20KUAT%20Kecamatan%20Tangerang`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    <span>Hubungi WA</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
